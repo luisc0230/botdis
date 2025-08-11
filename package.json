@@ -1,16 +1,17 @@
 {
-  "name": "discord-bot-attendance-replit",
+  "name": "discord-bot-attendance-render",
   "version": "1.0.0",
-  "description": "Bot de Discord para control de asistencia en Replit",
+  "description": "Bot de Discord para control de asistencia en Render.com",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "dev": "node main.js"
   },
   "keywords": [
     "discord",
     "bot",
     "asistencia",
-    "replit"
+    "render"
   ],
   "author": "Tu Nombre",
   "license": "MIT",
