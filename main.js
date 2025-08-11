@@ -1,16 +1,17 @@
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const express = require('express');
 
-// Variables de entorno (se configuran en Replit Secrets)
+// Variables de entorno (se configuran en Render)
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+const PORT = process.env.PORT || 3000;
 
 if (!DISCORD_TOKEN) {
-  console.error('❌ DISCORD_TOKEN no configurado en Secrets');
+  console.error('❌ DISCORD_TOKEN no configurado');
   process.exit(1);
 }
 
-console.log('🚀 Iniciando bot de Discord en Replit...');
+console.log('🚀 Iniciando bot de Discord en Render.com...');
 
 // Cliente Discord
 const client = new Client({
@@ -23,20 +24,24 @@ const client = new Client({
 });
 
 // =========================
-// SERVIDOR WEB PARA KEEP-ALIVE
+// SERVIDOR WEB PARA RENDER
 // =========================
 const app = express();
-const PORT = 3000;
 
+// Middleware
+app.use(express.json());
+
+// Rutas para keep-alive
 app.get('/', (req, res) => {
   res.json({
-    status: '✅ Bot funcionando en Replit',
+    status: '✅ Bot funcionando en Render.com',
     user: client.user?.tag || 'Conectando...',
     guilds: client.guilds?.cache.size || 0,
     uptime: Math.floor(process.uptime()),
-    platform: 'Replit.com',
+    platform: 'Render.com',
     timestamp: new Date().toISOString(),
-    limaTime: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' })
+    limaTime: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+    ready: client.isReady()
   });
 });
 
@@ -47,6 +52,7 @@ app.get('/health', (req, res) => {
     bot: isReady ? 'connected' : 'disconnected',
     user: client.user?.tag || null,
     latency: isReady ? client.ws.ping : null,
+    uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
   });
 });
@@ -55,13 +61,15 @@ app.get('/ping', (req, res) => {
   res.json({ 
     ping: 'pong', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: Math.floor(process.uptime()),
+    bot: client.user?.tag || 'Connecting...'
   });
 });
 
-app.listen(PORT, () => {
+// Iniciar servidor
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌐 Servidor web activo en puerto ${PORT}`);
-  console.log(`🔗 URL: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
+  console.log(`🔗 Render URL disponible para keep-alive`);
 });
 
 // =========================
@@ -74,12 +82,12 @@ client.once('ready', () => {
   console.log(`👤 Usuario: ${client.user.tag}`);
   console.log(`🏠 Servidores: ${client.guilds.cache.size}`);
   console.log(`📊 Google Sheets: ${GOOGLE_SHEETS_WEBHOOK_URL ? '✅ Configurado' : '❌ No configurado'}`);
-  console.log(`🌐 Platform: Replit.com`);
+  console.log(`🌐 Platform: Render.com`);
   console.log(`⏰ Hora Lima: ${new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' })}`);
   console.log('='*60);
   
   // Establecer actividad del bot
-  client.user.setActivity('Control de Asistencia 24/7 | Replit', { 
+  client.user.setActivity('Control de Asistencia 24/7 | Render.com', { 
     type: 'WATCHING' 
   });
 });
@@ -110,7 +118,7 @@ client.on('messageCreate', async (message) => {
     try {
       const embed = new EmbedBuilder()
         .setTitle('📊 Estado del Sistema de Asistencia')
-        .setDescription('🚀 **Funcionando en Replit.com**')
+        .setDescription('🚀 **Funcionando en Render.com**')
         .setColor(0x00ff00)
         .addFields([
           { name: '🤖 Bot', value: `✅ ${client.user.tag}`, inline: true },
@@ -118,9 +126,9 @@ client.on('messageCreate', async (message) => {
           { name: '🔗 Latencia', value: `${client.ws.ping}ms`, inline: true },
           { name: '⏰ Uptime', value: `${Math.floor(client.uptime / 1000)}s`, inline: true },
           { name: '📊 Google Sheets', value: GOOGLE_SHEETS_WEBHOOK_URL ? '✅ Configurado' : '❌ No configurado', inline: true },
-          { name: '🌐 Plataforma', value: 'Replit.com', inline: true }
+          { name: '🌐 Plataforma', value: 'Render.com', inline: true }
         ])
-        .setFooter({ text: '🚀 Siempre activo en Replit' })
+        .setFooter({ text: '🚀 Siempre activo en Render' })
         .setTimestamp();
       
       await message.reply({ embeds: [embed] });
@@ -136,7 +144,7 @@ client.on('messageCreate', async (message) => {
     try {
       const msg = await message.reply('🏓 Calculando latencia...');
       const latency = Date.now() - start;
-      await msg.edit(`🏓 **Pong!**\n**Latencia:** ${latency}ms\n**WebSocket:** ${client.ws.ping}ms\n**Plataforma:** Replit.com`);
+      await msg.edit(`🏓 **Pong!**\n**Latencia:** ${latency}ms\n**WebSocket:** ${client.ws.ping}ms\n**Plataforma:** Render.com`);
     } catch (error) {
       console.error('❌ Error en ping:', error);
     }
@@ -225,7 +233,7 @@ async function setupAttendancePanel(message) {
       }
     ])
     .setFooter({ 
-      text: '📧 Las confirmaciones llegan por DM | ⏰ Hora de Lima | 🚀 Powered by Replit',
+      text: '📧 Las confirmaciones llegan por DM | ⏰ Hora de Lima | 🚀 Powered by Render',
       iconURL: message.guild?.iconURL() || null
     })
     .setTimestamp();
@@ -343,17 +351,24 @@ async function handleButtonInteraction(interaction) {
       embed.setFooter({ text: '⚠️ Error guardando en Google Sheets' });
     }
 
-    const dmMessage = `${config.emoji} **${config.name}** registrado ${success ? 'exitosamente' : 'localmente'}.`;
-
-    // Actualizar respuesta
+    // Actualizar respuesta y eliminar después de 5 segundos
     await interaction.editReply({
       content: `${config.emoji} **${config.name}** registrado exitosamente`,
       embeds: [embed]
     });
+    
+    // Eliminar mensaje después de 5 segundos para no llenar el canal
+    setTimeout(async () => {
+      try {
+        await interaction.deleteReply();
+      } catch (error) {
+        console.warn('⚠️ No se pudo eliminar mensaje de confirmación');
+      }
+    }, 5000);
 
     // Enviar por DM
     try {
-      await user.send({ content: dmMessage, embeds: [embed] });
+      await user.send({ content: `${config.emoji} **${config.name}** registrado exitosamente`, embeds: [embed] });
       console.log(`✉️ DM enviado a ${user.username}`);
     } catch (dmError) {
       console.warn(`⚠️ No se pudo enviar DM a ${user.username}: ${dmError.message}`);
@@ -451,13 +466,22 @@ async function handleModalSubmit(interaction) {
       embed.setFooter({ text: '⚠️ Error guardando en Google Sheets' });
     }
 
-    // Actualizar respuesta
+    // Actualizar respuesta y eliminar después de 8 segundos
     await interaction.editReply({
       content: success ? 
         '🔴 **Logout registrado exitosamente con reporte de ventas**' : 
         '⚠️ **Logout registrado localmente** (error con Google Sheets)',
       embeds: [embed]
     });
+    
+    // Eliminar mensaje después de 8 segundos para no llenar el canal
+    setTimeout(async () => {
+      try {
+        await interaction.deleteReply();
+      } catch (error) {
+        console.warn('⚠️ No se pudo eliminar mensaje de logout');
+      }
+    }, 8000);
 
     // Enviar por DM
     try {
