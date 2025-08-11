@@ -1,0 +1,24 @@
+{
+  "name": "discord-bot-attendance-replit",
+  "version": "1.0.0",
+  "description": "Bot de Discord para control de asistencia en Replit",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "asistencia",
+    "replit"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
